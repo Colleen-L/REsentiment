@@ -1,35 +1,50 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [company, setCompany] = useState('');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleAnalysis() {
+    setLoading(true);
+    setResult(null);
+
+    const response = await fetch("http://localhost:8000/analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ company_name: company }),
+    })
+
+    const data = await response.json();
+    setResult(data);
+    setLoading(false);
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Company Rebranding Sentiment Analysis</h1>
+      <input
+        type = "text"
+        placeholder = "company name"
+        value = {company}
+        onChange={(e) => setCompany(e.target.value)}
+      />
+
+      <button onClick={handleAnalysis} disabled = {loading || !company}>
+        {loading ? "Analyzing..." : "Analyze Sentiment"}
+      </button>
+     
+
+      {result && (
+        <div style={{ marginTop: 20 }}>
+          <h2>Result for: {result.company}</h2>
+          <p>Sentiment: {result.sentiment.label}</p>
+          <p>Score: {result.sentiment.score.toFixed(2)}</p>
+        </div>
+      )}
     </>
   )
 }
 
-export default App
+export default App;
