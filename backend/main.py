@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from scraper import scrape
 
 app = FastAPI()
 
@@ -8,6 +9,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -25,8 +27,9 @@ async def analyze_company(request: Company):
   company = request.company_name
 
   #scrap web data about company's rebranding
+  headlines = scrape(company)
 
   #analyze sentiment of scraped data
   sentiment = {"label": "awful", "score": 0.1}
 
-  return {"company": company, "sentiment": sentiment}
+  return {"company": company, "headlines": headlines, "sentiment": sentiment}
